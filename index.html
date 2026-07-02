@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerador de Cartelas de Bingo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,900&family=Space+Mono:wght@400;700&family=Work+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <div class="topbar no-print">
+    <div class="brand">
+      <div class="ball">B</div>
+      <div>
+        <h1>Gerador de Cartelas</h1>
+        <div class="sub">bingo · sem repetição · pronto pra imprimir</div>
+      </div>
+    </div>
+    <div class="steps" id="stepsContainer">
+      <button class="step-btn active" data-step="1">1. Configurar</button>
+      <button class="step-btn" data-step="2">2. Validar</button>
+      <button class="step-btn" data-step="3">3. Exportar</button>
+    </div>
+  </div>
+
+  <main>
+    <!-- VIEW 1 -->
+    <section id="view1" class="view active">
+      <div class="ticket-panel">
+        <h2>Configure suas cartelas</h2>
+        <div class="form-grid">
+          <div class="field">
+            <label>Quantidade de cartelas <span class="hint">Quantas cartelas diferentes gerar</span></label>
+            <input type="number" id="qtdCartelas" min="1" value="10">
+          </div>
+          <div class="field">
+            <label>Linhas × Colunas <span class="hint">Formato da grade de cada cartela</span></label>
+            <div class="range-row">
+              <input type="number" id="linhas" min="1" value="5">
+              <span>×</span>
+              <input type="number" id="colunas" min="1" value="5">
+            </div>
+          </div>
+          <div class="field">
+            <label>Número inicial (X) <span class="hint">Menor número sorteável</span></label>
+            <input type="number" id="numMin" value="1">
+          </div>
+          <div class="field">
+            <label>Número final (Y) <span class="hint">Maior número sorteável (incluído)</span></label>
+            <input type="number" id="numMax" value="75">
+          </div>
+        </div>
+
+        <div class="toggle-row">
+          <label class="switch">
+            <input type="checkbox" id="centroLivre" checked>
+            <span class="slider-toggle"></span>
+          </label>
+          <div class="txt">
+            <strong>Célula central livre</strong>
+            <span>Marca o meio da cartela como espaço "FREE" (só funciona com linhas e colunas ímpares)</span>
+          </div>
+        </div>
+
+        <div id="msgBox" class="msg"></div>
+
+        <div class="actions">
+          <button class="btn" id="btnGerar">Gerar cartelas →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2 -->
+    <section id="view2" class="view">
+      <div class="dup-banner" id="dupBanner"></div>
+      <div class="layout">
+        <aside class="control-panel no-print">
+          <h3>Ajustar aparência</h3>
+          <!-- Dentro do control-panel, após o último controle de cor e antes do divider -->
+          <div class="ctrl">
+            <label>Título da cartela</label>
+            <input type="text" id="cardTitle" value="BINGO" placeholder="Ex: Bingo da Escola"
+              style="width:100%; font-family: 'Space Mono', monospace; padding:8px; border:2px solid var(--ink); border-radius:8px;">
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="ctrl">
+            <label>Texto da célula livre</label>
+            <input type="text" id="freeText" value="FREE" placeholder="Ex: GRÁTIS"
+              style="width:100%; font-family: 'Space Mono', monospace; padding:8px; border:2px solid var(--ink); border-radius:8px;">
+          </div>
+
+          <div class="ctrl">
+            <label>Imagem na célula livre <span style="font-size:10px; color:#8a8564;">(substitui o
+                texto)</span></label>
+            <input type="file" id="freeImage" accept="image/*"
+              style="width:100%; font-family: 'Space Mono', monospace; padding:6px; border:2px solid var(--ink); border-radius:8px;">
+            <button id="removeImage" class="btn ghost" style="margin-top:6px; padding:8px 14px; font-size:12px;">Remover
+              imagem</button>
+          </div>
+          <div class="ctrl">
+            <label>Cor de fundo <span class="val" id="vBg"></span></label>
+            <input type="color" id="cBg" value="#fbf5e6">
+          </div>
+          <div class="ctrl">
+            <label>Cor da borda / números <span class="val" id="vBorder"></span></label>
+            <input type="color" id="cBorder" value="#1a1e1b">
+          </div>
+          <div class="ctrl">
+            <label>Cor de destaque (título / free) <span class="val" id="vAccent"></span></label>
+            <input type="color" id="cAccent" value="#c1443a">
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="ctrl">
+            <label>Largura da célula <span class="val" id="vCellW">56px</span></label>
+            <input type="range" id="cellW" min="30" max="90" value="56">
+          </div>
+          <div class="ctrl">
+            <label>Altura da célula <span class="val" id="vCellH">56px</span></label>
+            <input type="range" id="cellH" min="30" max="90" value="56">
+          </div>
+          <div class="ctrl">
+            <label>Tamanho da fonte <span class="val" id="vFont">20px</span></label>
+            <input type="range" id="cellFont" min="10" max="36" value="20">
+          </div>
+          <div class="ctrl">
+            <label>Arredondamento da cartela <span class="val" id="vRadius">14px</span></label>
+            <input type="range" id="cardRadius" min="0" max="30" value="14">
+          </div>
+
+          <div class="divider"></div>
+          <button class="btn secondary" id="btnVoltar">← Voltar e reconfigurar</button>
+          <button class="btn ghost" id="btnIrExportar">Ir para exportação →</button>
+        </aside>
+
+        <div class="cards-wrap">
+          <div class="cards-toolbar">
+            <div class="count" id="cardsCount"></div>
+          </div>
+          <div class="cards-grid" id="cardsGrid"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3 -->
+    <section id="view3" class="view">
+      <div class="export-info no-print">
+        <h2>Exportar em PDF</h2>
+        <p>As cartelas abaixo já estão formatadas para impressão. Escolha quantas cartelas por linha na página impressa
+          e clique em <strong>Imprimir / Salvar PDF</strong> — isso abre a caixa de impressão do navegador, onde você
+          escolhe "Salvar como PDF" no destino.</p>
+        <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap; margin-top:14px;">
+          <label style="font-family:'Space Mono',monospace; font-size:13px;">Cartelas por linha na página:
+            <select class="pp" id="printCols">
+              <option value="1">1</option>
+              <option value="2" selected>2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+            </select>
+          </label>
+          <button class="btn" id="btnImprimir">🖨 Imprimir / Salvar PDF</button>
+          <button class="btn secondary" id="btnVoltar2">← Voltar para validação</button>
+        </div>
+        <ol class="steps-list">
+          <li>Clique em "Imprimir / Salvar PDF".</li>
+          <li>Na janela de impressão, selecione o destino "Salvar como PDF".</li>
+          <li>Confirme e escolha onde salvar o arquivo.</li>
+        </ol>
+      </div>
+      <div class="cards-grid" id="cardsGridPrint"></div>
+    </section>
+  </main>
+
+  <footer class="no-print">gerador de cartelas · gere, valide, imprima</footer>
+
+  <script src="script.js"></script>
+</body>
+
+</html>

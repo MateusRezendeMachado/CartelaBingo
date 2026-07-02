@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerador de Cartelas de Bingo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,900&family=Space+Mono:wght@400;700&family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --felt: #1B4D3E;
+    --felt-dark: #123A2E;
+    --paper: #F7EFDD;
+    --paper-dark: #EFE3C6;
+    --ink: #1A1E1B;
+    --gold: #E8A93A;
+    --gold-dark: #C68A22;
+    --red: #C1443A;
+    --line: rgba(26,30,27,0.14);
+
+    --card-bg: #FBF5E6;
+    --card-border: #1A1E1B;
+    --card-number: #1A1E1B;
+    --card-accent: #C1443A;
+    --cell-w: 56px;
+    --cell-h: 56px;
+    --cell-font: 20px;
+    --card-radius: 14px;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--felt);
+    background-image:
+      radial-gradient(circle at 20% 10%, rgba(255,255,255,0.05), transparent 40%),
+      repeating-linear-gradient(45deg, rgba(255,255,255,0.015) 0 2px, transparent 2px 40px);
+    color: var(--ink);
+    font-family: 'Work Sans', sans-serif;
+    min-height:100vh;
+  }
+
+  h1,h2,h3{ font-family:'Fraunces', serif; margin:0; }
+
+  .topbar{
+    padding: 28px clamp(16px,4vw,56px) 18px;
+    display:flex; align-items:baseline; justify-content:space-between; gap:16px; flex-wrap:wrap;
+  }
+  .brand{ display:flex; align-items:center; gap:14px; }
+  .brand .ball{
+    width:44px; height:44px; border-radius:50%;
+    background: radial-gradient(circle at 32% 28%, #fff7e0, var(--gold) 55%, var(--gold-dark) 100%);
+    box-shadow: inset 0 -4px 6px rgba(0,0,0,0.25), 0 3px 8px rgba(0,0,0,0.35);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Mono', monospace; font-weight:700; color:#1A1E1B; font-size:15px;
+  }
+  .brand h1{ color: var(--paper); font-size: clamp(22px,3vw,30px); font-weight:700; letter-spacing:0.3px; }
+  .brand .sub{ color: rgba(247,239,221,0.65); font-size:13px; margin-top:2px; font-family:'Space Mono',monospace; }
+
+  .steps{ display:flex; gap:10px; font-family:'Space Mono', monospace; font-size:12px; color: rgba(247,239,221,0.55); }
+  .steps span{ padding:6px 12px; border:1px solid rgba(247,239,221,0.25); border-radius:20px; }
+  .steps span.active{ background: var(--gold); color:#1A1E1B; border-color: var(--gold); font-weight:700; }
+
+  main{ padding: 0 clamp(16px,4vw,56px) 60px; max-width:1200px; margin:0 auto; }
+
+  .view{ display:none; }
+  .view.active{ display:block; }
+
+  .ticket-panel{
+    background: var(--paper);
+    border-radius: 20px;
+    padding: clamp(20px,4vw,44px);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+    position:relative;
+    background-image: repeating-linear-gradient(0deg, transparent 0 47px, var(--line) 47px 48px);
+  }
+  .ticket-panel::before{
+    content:"";
+    position:absolute; left:0; top:0; bottom:0; width:26px;
+    background-image: radial-gradient(circle at 13px 30px, var(--felt) 7px, transparent 7.5px);
+    background-size: 26px 40px;
+    background-repeat: repeat-y;
+    border-right: 2px dashed var(--line);
+  }
+  .form-grid{
+    display:grid; grid-template-columns: repeat(2, 1fr); gap: 22px 32px;
+    margin-top: 22px; margin-left: 20px;
+  }
+  .field{ display:flex; flex-direction:column; gap:6px; }
+  .field.full{ grid-column: 1 / -1; }
+  label{ font-family:'Space Mono', monospace; font-size:12px; text-transform:uppercase; letter-spacing:0.06em; color: #55523f; }
+  label .hint{ text-transform:none; letter-spacing:0; display:block; font-size:12px; color:#8a8564; margin-top:2px; }
+  input[type=number]{
+    font-family:'Space Mono', monospace; font-size:18px; padding:10px 12px;
+    border: 2px solid var(--ink); border-radius:8px; background:#fff; color:var(--ink);
+    width:100%;
+  }
+  input[type=number]:focus{ outline:3px solid var(--gold); outline-offset:1px; }
+  .range-row{ display:flex; align-items:center; gap:12px; }
+  .range-row input{ flex:1; }
+  .range-row span{ font-family:'Space Mono', monospace; color:#8a8564; }
+
+  .toggle-row{
+    display:flex; align-items:center; gap:12px; margin-left:20px; margin-top:24px;
+    padding: 14px 16px; background: rgba(255,255,255,0.5); border:1px dashed var(--line); border-radius:10px;
+  }
+  .switch{ position:relative; width:46px; height:26px; flex:none; }
+  .switch input{ opacity:0; width:0; height:0; }
+  .slider-toggle{
+    position:absolute; inset:0; background:#cfc7a8; border-radius:20px; cursor:pointer; transition:.2s;
+  }
+  .slider-toggle::before{
+    content:""; position:absolute; width:20px; height:20px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.2s;
+    box-shadow:0 1px 3px rgba(0,0,0,0.3);
+  }
+  .switch input:checked + .slider-toggle{ background: var(--felt); }
+  .switch input:checked + .slider-toggle::before{ transform: translateX(20px); }
+  .toggle-row .txt strong{ display:block; font-size:14px; }
+  .toggle-row .txt span{ font-size:12px; color:#6b6850; }
+
+  .msg{ margin: 18px 20px 0; padding:12px 14px; border-radius:8px; font-size:14px; font-family:'Space Mono',monospace; display:none; }
+  .msg.error{ background: rgba(193,68,58,0.12); border:1px solid var(--red); color:#7a2b24; display:block; }
+  .msg.warn{ background: rgba(232,169,58,0.16); border:1px solid var(--gold-dark); color:#6b4c0c; display:block; }
+
+  .btn{
+    font-family:'Space Mono', monospace; font-weight:700; font-size:14px; letter-spacing:0.03em;
+    padding: 13px 26px; border-radius: 999px; border: 2px solid var(--ink); cursor:pointer;
+    background: var(--gold); color:#1A1E1B; transition: transform .12s ease, box-shadow .12s ease;
+    text-transform:uppercase;
+  }
+  .btn:hover{ transform: translateY(-2px); box-shadow: 0 6px 14px rgba(0,0,0,0.25); }
+  .btn:active{ transform: translateY(0); }
+  .btn.secondary{ background: transparent; color: var(--paper); border-color: rgba(247,239,221,0.5); }
+  .btn.secondary:hover{ background: rgba(247,239,221,0.08); }
+  .btn.ghost{ background:#fff; }
+  .btn:disabled{ opacity:.45; cursor:not-allowed; transform:none; box-shadow:none; }
+
+  .actions{ margin: 28px 20px 0; display:flex; gap:14px; flex-wrap:wrap; align-items:center; }
+
+  .layout{ display:grid; grid-template-columns: 300px 1fr; gap:28px; align-items:start; }
+  @media (max-width: 880px){ .layout{ grid-template-columns: 1fr; } }
+
+  .control-panel{
+    background: var(--paper); border-radius:16px; padding:20px; position:sticky; top:20px;
+    box-shadow: 0 14px 34px rgba(0,0,0,0.3);
+  }
+  .control-panel h3{ font-size:17px; margin-bottom:14px; }
+  .ctrl{ margin-bottom:16px; }
+  .ctrl label{ display:flex; justify-content:space-between; margin-bottom:6px; }
+  .ctrl input[type=range]{ width:100%; accent-color: var(--felt); }
+  .ctrl input[type=color]{ width:100%; height:36px; border:2px solid var(--ink); border-radius:8px; padding:2px; background:#fff; cursor:pointer; }
+  .ctrl .val{ font-family:'Space Mono',monospace; color:#8a8564; }
+  .control-panel .divider{ height:1px; background: var(--line); margin: 18px 0; }
+  .control-panel .btn{ width:100%; margin-top:6px; }
+  .swatches{ display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;}
+  .swatch{ width:26px; height:26px; border-radius:50%; border:2px solid var(--ink); cursor:pointer; }
+
+  .cards-wrap{ }
+  .cards-toolbar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:10px; }
+  .cards-toolbar .count{ color: var(--paper); font-family:'Space Mono', monospace; font-size:13px; }
+  .cards-grid{
+    display:grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap:22px;
+  }
+
+  .bingo-card{
+    background: var(--card-bg);
+    border: 3px solid var(--card-border);
+    border-radius: var(--card-radius);
+    padding: 14px 14px 16px;
+    position:relative;
+    box-shadow: 0 10px 22px rgba(0,0,0,0.28);
+  }
+  .bingo-card .card-head{
+    display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;
+    border-bottom: 2px dashed var(--card-border); padding-bottom:8px;
+  }
+  .bingo-card .card-title{ font-family:'Fraunces',serif; font-weight:700; font-size:18px; color: var(--card-accent); letter-spacing:0.5px; }
+  .bingo-card .card-num{ font-family:'Space Mono',monospace; font-size:11px; color: var(--card-number); opacity:0.6; }
+  .bingo-grid{ display:grid; gap:6px; justify-content:center; }
+  .bingo-cell{
+    width: var(--cell-w); height: var(--cell-h);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Mono', monospace; font-weight:700; font-size: var(--cell-font);
+    color: var(--card-number);
+    background: rgba(255,255,255,0.5);
+    border: 1.5px solid var(--card-border);
+    border-radius: 6px;
+  }
+  .bingo-cell.free{ background: var(--card-accent); color:#fff; font-size: calc(var(--cell-font) * 0.6); }
+
+  .dup-banner{
+    margin-bottom:16px; padding:12px 16px; border-radius:10px; background: rgba(232,169,58,0.9);
+    color:#1A1E1B; font-family:'Space Mono',monospace; font-size:13px; display:none;
+  }
+
+  .export-info{ background: var(--paper); border-radius:16px; padding:24px 26px; margin-bottom:24px; box-shadow: 0 14px 34px rgba(0,0,0,0.3); }
+  .export-info p{ margin: 8px 0; line-height:1.55; }
+  .export-info .steps-list{ font-family:'Space Mono',monospace; font-size:13px; background:#fff; border-radius:10px; padding:14px 18px; margin-top:12px; }
+  .export-info .steps-list li{ margin-bottom:6px; }
+
+  select.pp{
+    font-family:'Space Mono',monospace; font-size:13px; padding:8px 10px; border-radius:8px; border:2px solid var(--ink); background:#fff;
+  }
+
+  footer{ text-align:center; padding: 20px; color: rgba(247,239,221,0.4); font-family:'Space Mono',monospace; font-size:12px; }
+
+  @media print{
+    body{ background:#fff; }
+    .no-print{ display:none !important; }
+    .topbar, .control-panel, .export-info, .cards-toolbar, .dup-banner, footer{ display:none !important; }
+    main{ padding:0; max-width:none; }
+    .cards-grid{
+      display:grid;
+      grid-template-columns: repeat(var(--print-cols, 2), 1fr);
+      gap: 14px;
+    }
+    .bingo-card{ box-shadow:none; break-inside: avoid; page-break-inside: avoid; }
+    /* ↓↓↓ CORREÇÃO PRINCIPAL: permite que a view com print-active apareça na impressão */
+    .view{ display:none !important; }
+    .view.print-active{ display:block !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar no-print">
+  <div class="brand">
+    <div class="ball">B</div>
+    <div>
+      <h1>Gerador de Cartelas</h1>
+      <div class="sub">bingo &nbsp;·&nbsp; sem repetição &nbsp;·&nbsp; pronto pra imprimir</div>
+    </div>
+  </div>
+  <div class="steps">
+    <span id="stepTag1" class="active">1. Configurar</span>
+    <span id="stepTag2">2. Validar</span>
+    <span id="stepTag3">3. Exportar</span>
+  </div>
+</div>
+
+<main>
+
+  <section id="view1" class="view active">
+    <div class="ticket-panel">
+      <h2>Configure suas cartelas</h2>
+      <div class="form-grid">
+        <div class="field">
+          <label>Quantidade de cartelas
+            <span class="hint">Quantas cartelas diferentes gerar</span>
+          </label>
+          <input type="number" id="qtdCartelas" min="1" value="10">
+        </div>
+
+        <div class="field">
+          <label>Linhas × Colunas
+            <span class="hint">Formato da grade de cada cartela</span>
+          </label>
+          <div class="range-row">
+            <input type="number" id="linhas" min="1" value="5">
+            <span>×</span>
+            <input type="number" id="colunas" min="1" value="5">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Número inicial (X)
+            <span class="hint">Menor número sorteável</span>
+          </label>
+          <input type="number" id="numMin" value="1">
+        </div>
+
+        <div class="field">
+          <label>Número final (Y)
+            <span class="hint">Maior número sorteável (incluído)</span>
+          </label>
+          <input type="number" id="numMax" value="75">
+        </div>
+      </div>
+
+      <div class="toggle-row">
+        <label class="switch">
+          <input type="checkbox" id="centroLivre" checked>
+          <span class="slider-toggle"></span>
+        </label>
+        <div class="txt">
+          <strong>Célula central livre</strong>
+          <span>Marca o meio da cartela como espaço "FREE" (só funciona com linhas e colunas ímpares)</span>
+        </div>
+      </div>
+
+      <div id="msgBox" class="msg"></div>
+
+      <div class="actions">
+        <button class="btn" id="btnGerar">Gerar cartelas →</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="view2" class="view">
+    <div class="dup-banner" id="dupBanner"></div>
+    <div class="layout">
+      <aside class="control-panel no-print">
+        <h3>Ajustar aparência</h3>
+
+        <div class="ctrl">
+          <label>Cor de fundo <span class="val" id="vBg"></span></label>
+          <input type="color" id="cBg" value="#fbf5e6">
+        </div>
+        <div class="ctrl">
+          <label>Cor da borda / números <span class="val" id="vBorder"></span></label>
+          <input type="color" id="cBorder" value="#1a1e1b">
+        </div>
+        <div class="ctrl">
+          <label>Cor de destaque (título / free) <span class="val" id="vAccent"></span></label>
+          <input type="color" id="cAccent" value="#c1443a">
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="ctrl">
+          <label>Largura da célula <span class="val" id="vCellW">56px</span></label>
+          <input type="range" id="cellW" min="30" max="90" value="56">
+        </div>
+        <div class="ctrl">
+          <label>Altura da célula <span class="val" id="vCellH">56px</span></label>
+          <input type="range" id="cellH" min="30" max="90" value="56">
+        </div>
+        <div class="ctrl">
+          <label>Tamanho da fonte <span class="val" id="vFont">20px</span></label>
+          <input type="range" id="cellFont" min="10" max="36" value="20">
+        </div>
+        <div class="ctrl">
+          <label>Arredondamento da cartela <span class="val" id="vRadius">14px</span></label>
+          <input type="range" id="cardRadius" min="0" max="30" value="14">
+        </div>
+
+        <div class="divider"></div>
+        <button class="btn secondary" id="btnVoltar" style="width:100%;">← Voltar e reconfigurar</button>
+        <button class="btn ghost" id="btnIrExportar" style="width:100%; margin-top:10px;">Ir para exportação →</button>
+      </aside>
+
+      <div class="cards-wrap">
+        <div class="cards-toolbar">
+          <div class="count" id="cardsCount"></div>
+        </div>
+        <div class="cards-grid" id="cardsGrid"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="view3" class="view">
+    <div class="export-info no-print">
+      <h2>Exportar em PDF</h2>
+      <p>As cartelas abaixo já estão formatadas para impressão. Escolha quantas cartelas por linha na
+      página impressa e clique em <strong>Imprimir / Salvar PDF</strong> — isso abre a caixa de impressão do
+      navegador, onde você escolhe "Salvar como PDF" no destino.</p>
+      <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap; margin-top:14px;">
+        <label style="font-family:'Space Mono',monospace; font-size:13px;">Cartelas por linha na página:
+          <select class="pp" id="printCols">
+            <option value="1">1</option>
+            <option value="2" selected>2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+          </select>
+        </label>
+        <button class="btn" id="btnImprimir">🖨 Imprimir / Salvar PDF</button>
+        <button class="btn secondary" id="btnVoltar2">← Voltar para validação</button>
+      </div>
+      <ol class="steps-list">
+        <li>Clique em "Imprimir / Salvar PDF".</li>
+        <li>Na janela de impressão, selecione o destino "Salvar como PDF".</li>
+        <li>Confirme e escolha onde salvar o arquivo.</li>
+      </ol>
+    </div>
+    <div class="cards-grid" id="cardsGridPrint"></div>
+  </section>
+
+</main>
+
+<footer class="no-print">gerador de cartelas · gere, valide, imprima</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  const el = id => document.getElementById(id);
+
+  const view1 = el('view1'), view2 = el('view2'), view3 = el('view3');
+  const stepTag1 = el('stepTag1'), stepTag2 = el('stepTag2'), stepTag3 = el('stepTag3');
+
+  let state = {
+    cards: [],
+    rows: 5,
+    cols: 5,
+    freeCenter: true
+  };
+
+  function showView(n){
+    // Remove classes de todas as views e steps
+    [view1, view2, view3].forEach(v => {
+      v.classList.remove('active', 'print-active');
+    });
+    [stepTag1, stepTag2, stepTag3].forEach(s => s.classList.remove('active'));
+
+    if(n === 1) {
+      view1.classList.add('active');
+      stepTag1.classList.add('active');
+    }
+    if(n === 2) {
+      view2.classList.add('active');
+      stepTag2.classList.add('active');
+    }
+    if(n === 3) {
+      view3.classList.add('active');
+      view3.classList.add('print-active');  // ← CORREÇÃO: agora a view3 aparece na impressão
+      stepTag3.classList.add('active');
+    }
+  }
+
+  function showMsg(text, type){
+    const box = el('msgBox');
+    box.textContent = text;
+    box.className = 'msg ' + type;
+  }
+  function clearMsg(){
+    const box = el('msgBox');
+    box.textContent = '';
+    box.className = 'msg';
+  }
+
+  function nCr(n,r){
+    if(r<0 || r>n) return 0;
+    r = Math.min(r, n-r);
+    let result = 1;
+    for(let i=0;i<r;i++){
+      result *= (n-i)/(i+1);
+      if(result > 1e15) return 1e15;
+    }
+    return result;
+  }
+
+  function computeBands(min, max, cols){
+    const total = max - min + 1;
+    const base = Math.floor(total/cols);
+    const extra = total % cols;
+    const bands = [];
+    let start = min;
+    for(let i=0;i<cols;i++){
+      const size = base + (i < extra ? 1 : 0);
+      bands.push({min:start, max:start+size-1, size});
+      start += size;
+    }
+    return bands;
+  }
+
+  function shuffle(arr){
+    for(let i=arr.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [arr[i],arr[j]] = [arr[j],arr[i]];
+    }
+    return arr;
+  }
+
+  function pickRandom(min,max,count){
+    const pool = [];
+    for(let v=min; v<=max; v++) pool.push(v);
+    shuffle(pool);
+    return pool.slice(0,count);
+  }
+
+  function isSequential(flatNumbers){
+    if(flatNumbers.length < 3) return false;
+    let asc = true, desc = true;
+    for(let i=1;i<flatNumbers.length;i++){
+      if(flatNumbers[i] !== flatNumbers[i-1]+1) asc = false;
+      if(flatNumbers[i] !== flatNumbers[i-1]-1) desc = false;
+    }
+    return asc || desc;
+  }
+
+  function cardFingerprint(grid){
+    return grid.map(row => row.map(c => c.free ? 'F' : c.n).join(',')).join('|');
+  }
+
+  function generateCards(qtd, rows, cols, min, max, freeCenter){
+    const total = max - min + 1;
+    const hasCenter = freeCenter && rows % 2 === 1 && cols % 2 === 1;
+    const centerRow = Math.floor(rows/2), centerCol = Math.floor(cols/2);
+
+    const bands = computeBands(min, max, cols);
+
+    for(let c=0;c<cols;c++){
+      const needed = rows - ((hasCenter && c===centerCol) ? 1 : 0);
+      if(bands[c].size < needed){
+        return { error: `A faixa de números é pequena demais: a coluna ${c+1} precisa de ${needed} número(s) únicos, mas só tem ${bands[c].size} disponível(is) (de ${bands[c].min} a ${bands[c].max}). Aumente o intervalo X–Y ou reduza linhas/colunas.` };
+      }
+    }
+
+    let estimate = 1;
+    for(let c=0;c<cols;c++){
+      const needed = rows - ((hasCenter && c===centerCol) ? 1 : 0);
+      estimate *= nCr(bands[c].size, needed);
+      if(estimate > 1e12){ estimate = 1e12; break; }
+    }
+
+    const fingerprints = new Set();
+    const cards = [];
+    const MAX_ATTEMPTS_PER_CARD = 500;
+
+    for(let i=0;i<qtd;i++){
+      let placed = false;
+      for(let attempt=0; attempt<MAX_ATTEMPTS_PER_CARD && !placed; attempt++){
+        const colValues = [];
+        for(let c=0;c<cols;c++){
+          const needed = rows - ((hasCenter && c===centerCol) ? 1 : 0);
+          let vals = pickRandom(bands[c].min, bands[c].max, needed);
+          vals = shuffle(vals);
+          colValues.push(vals);
+        }
+
+        const grid = [];
+        for(let r=0;r<rows;r++){
+          const row = [];
+          for(let c=0;c<cols;c++){
+            if(hasCenter && r===centerRow && c===centerCol){
+              row.push({free:true});
+            } else {
+              const idx = (hasCenter && c===centerCol && r>centerRow) ? r-1 : r;
+              row.push({n: colValues[c][idx], free:false});
+            }
+          }
+          grid.push(row);
+        }
+
+        const flat = [];
+        grid.forEach(row => row.forEach(cell => { if(!cell.free) flat.push(cell.n); }));
+
+        if(isSequential(flat)) continue;
+
+        const fp = cardFingerprint(grid);
+        if(fingerprints.has(fp)) continue;
+
+        fingerprints.add(fp);
+        cards.push(grid);
+        placed = true;
+      }
+      if(!placed){
+        return {
+          error: `Só foi possível gerar ${cards.length} cartela(s) únicas e sem sequência de ${qtd} pedidas. A combinação de intervalo de números e tamanho da cartela não comporta tantas cartelas diferentes. Tente aumentar o intervalo X–Y, reduzir a quantidade de cartelas, ou reduzir o tamanho da grade.`,
+          partial: cards
+        };
+      }
+    }
+
+    return { cards, estimate };
+  }
+
+  el('btnGerar').addEventListener('click', () => {
+    clearMsg();
+    const qtd = parseInt(el('qtdCartelas').value, 10);
+    const rows = parseInt(el('linhas').value, 10);
+    const cols = parseInt(el('colunas').value, 10);
+    const min = parseInt(el('numMin').value, 10);
+    const max = parseInt(el('numMax').value, 10);
+    const freeCenter = el('centroLivre').checked;
+
+    if(!qtd || qtd < 1){ showMsg('Informe uma quantidade de cartelas válida (mínimo 1).', 'error'); return; }
+    if(!rows || rows < 1 || !cols || cols < 1){ showMsg('Informe linhas e colunas válidas (mínimo 1).', 'error'); return; }
+    if(isNaN(min) || isNaN(max) || max <= min){ showMsg('O número final (Y) precisa ser maior que o número inicial (X).', 'error'); return; }
+    if((max - min + 1) < rows*cols){ showMsg(`O intervalo de ${min} a ${max} tem apenas ${max-min+1} números, mas cada cartela precisa de até ${rows*cols} números. Aumente o intervalo.`, 'error'); return; }
+
+    const result = generateCards(qtd, rows, cols, min, max, freeCenter);
+
+    if(result.error && (!result.partial || result.partial.length===0)){
+      showMsg(result.error, 'error');
+      return;
+    }
+    if(result.error && result.partial){
+      showMsg(result.error, 'warn');
+      state.cards = result.partial;
+    } else {
+      state.cards = result.cards;
+    }
+    state.rows = rows; state.cols = cols; state.freeCenter = freeCenter && rows%2===1 && cols%2===1;
+
+    renderCards();
+    showView(2);
+  });
+
+  function buildCardHTML(grid, index){
+    const rows = grid.length, cols = grid[0].length;
+    let cellsHTML = '';
+    grid.forEach(row => row.forEach(cell => {
+      if(cell.free){
+        cellsHTML += `<div class="bingo-cell free">FREE</div>`;
+      } else {
+        cellsHTML += `<div class="bingo-cell">${cell.n}</div>`;
+      }
+    }));
+    return `
+      <div class="bingo-card">
+        <div class="card-head">
+          <div class="card-title">BINGO</div>
+          <div class="card-num">Nº ${String(index+1).padStart(3,'0')}</div>
+        </div>
+        <div class="bingo-grid" style="grid-template-columns: repeat(${cols}, var(--cell-w));">
+          ${cellsHTML}
+        </div>
+      </div>`;
+  }
+
+  function renderCards(){
+    const gridEl = el('cardsGrid');
+    const gridPrintEl = el('cardsGridPrint');
+    let html = '';
+    state.cards.forEach((grid, i) => { html += buildCardHTML(grid, i); });
+    gridEl.innerHTML = html;
+    gridPrintEl.innerHTML = html;
+    el('cardsCount').textContent = `${state.cards.length} cartela(s) geradas · ${state.rows}×${state.cols} · ${state.freeCenter ? 'com' : 'sem'} espaço livre central`;
+    el('dupBanner').style.display = 'none';
+  }
+
+  function applyStyles(){
+    const root = document.documentElement.style;
+    root.setProperty('--card-bg', el('cBg').value);
+    root.setProperty('--card-border', el('cBorder').value);
+    root.setProperty('--card-number', el('cBorder').value);
+    root.setProperty('--card-accent', el('cAccent').value);
+    root.setProperty('--cell-w', el('cellW').value + 'px');
+    root.setProperty('--cell-h', el('cellH').value + 'px');
+    root.setProperty('--cell-font', el('cellFont').value + 'px');
+    root.setProperty('--card-radius', el('cardRadius').value + 'px');
+
+    el('vBg').textContent = el('cBg').value;
+    el('vBorder').textContent = el('cBorder').value;
+    el('vAccent').textContent = el('cAccent').value;
+    el('vCellW').textContent = el('cellW').value + 'px';
+    el('vCellH').textContent = el('cellH').value + 'px';
+    el('vFont').textContent = el('cellFont').value + 'px';
+    el('vRadius').textContent = el('cardRadius').value + 'px';
+  }
+  ['cBg','cBorder','cAccent','cellW','cellH','cellFont','cardRadius'].forEach(id=>{
+    el(id).addEventListener('input', applyStyles);
+  });
+  applyStyles();
+
+  el('btnVoltar').addEventListener('click', () => showView(1));
+  el('btnVoltar2').addEventListener('click', () => showView(2));
+  el('btnIrExportar').addEventListener('click', () => showView(3));
+
+  el('printCols').addEventListener('change', () => {
+    document.documentElement.style.setProperty('--print-cols', el('printCols').value);
+  });
+  document.documentElement.style.setProperty('--print-cols', el('printCols').value);
+
+  el('btnImprimir').addEventListener('click', () => {
+    window.print();
+  });
+
+})();
+</script>
+</body>
+</html>

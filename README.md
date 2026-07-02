@@ -26,7 +26,7 @@ Um gerador de cartelas de bingo 100% cliente (front-end) que permite criar carte
 
 ## 🖥️ Demonstração
 
-Você pode testar o gerador diretamente no navegador abrindo o arquivo `[text](https://cartelabingorenata.netlify.app/)`.  
+Você pode testar o gerador diretamente no navegador abrindo o arquivo `https://cartelabingorenata.netlify.app/`.  
 
 
 

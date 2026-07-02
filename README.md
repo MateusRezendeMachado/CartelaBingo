@@ -1,10 +1,10 @@
-# 🎱 Gerador de Cartelas de Bingo
+## Gerador de Cartelas de Bingo
 
 Um gerador de cartelas de bingo 100% cliente (front-end) que permite criar cartelas personalizadas, únicas e sem sequências, com visualização em tempo real, customização de cores, tamanhos, textos, imagens e exportação para PDF pronta para imprimir.
 
 ---
 
-## 🧠 Funcionalidades
+##  Funcionalidades
 
 - ✅ Configuração da quantidade de cartelas, intervalo de números (X a Y), linhas e colunas
 - ✅ Célula central "LIVRE" opcional (apenas para grades ímpares)

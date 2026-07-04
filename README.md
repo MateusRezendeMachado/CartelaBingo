@@ -39,4 +39,3 @@ Acesse o projeto:
 ## 📄 Licença
 Este projeto é distribuído. Sinta-se à vontade para utilizar, estudar e adaptar o código conforme sua necessidade.
 
-Este projeto está disponível sob a licença MIT.

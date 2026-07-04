@@ -1,32 +1,42 @@
 ## Gerador de Cartelas de Bingo
 
-Um gerador de cartelas de bingo 100% cliente (front-end) que permite criar cartelas personalizadas, únicas e sem sequências, com visualização em tempo real, customização de cores, tamanhos, textos, imagens e exportação para PDF pronta para imprimir.
+Crie cartelas de bingo personalizadas de forma rápida, diretamente no navegador. Basta configurar as opções, gerar as cartelas e imprimir ou salvar em PDF.
 
----
+## ✨ Funcionalidades
 
-##  Funcionalidades
+* ✅ Gere uma ou várias cartelas de uma só vez
+* ✅ Escolha o intervalo dos números (ex.: 1 a 75)
+* ✅ Defina a quantidade de linhas e colunas
+* ✅ Opção de célula central **LIVRE**
+* ✅ Cartelas únicas, sem repetições
+* ✅ Evita sequências numéricas consecutivas
+* ✅ Personalize:
 
-- ✅ Configuração da quantidade de cartelas, intervalo de números (X a Y), linhas e colunas
-- ✅ Célula central "LIVRE" opcional (apenas para grades ímpares)
-- ✅ Geração de cartelas **únicas** e sem sequências consecutivas (ex.: 1,2,3,4,5)
-- ✅ Validação automática dos parâmetros (viabilidade das combinações)
-- ✅ Visualização em grid responsivo
-- ✅ Painel de personalização em tempo real:
-  - Cor de fundo, borda, destaque (título e célula livre)
-  - Largura, altura, tamanho da fonte e arredondamento das células
-  - Título editável (ex.: "Bingo da Escola")
-  - Texto da célula livre personalizável (ex.: "GRÁTIS")
-  - Upload de imagem para a célula livre (substitui o texto) – com redimensionamento automático
-- ✅ Navegação por etapas (1. Configurar → 2. Validar → 3. Exportar) com botões que permitem voltar
-- ✅ Exportação para PDF via `window.print()` com preservação de cores, imagens e layout
-- ✅ Organização em classes JavaScript (BingoCard, CardGenerator, UIController)
-- ✅ Totalmente responsivo, funciona offline
+  * Título da cartela
+  * Texto da célula livre
+  * Cores
+  * Tamanho das células
+  * Tamanho da fonte
+  * Bordas arredondadas
+* ✅ Adicione uma imagem na célula livre
+* ✅ Visualização em tempo real
+* ✅ Exportação para PDF pronta para impressão
+* ✅ Funciona em computadores, tablets e celulares
+* ✅ Não precisa de instalação nem de internet após carregar a página
 
----
+## 🌐 Demonstração
 
-## 🖥️ Demonstração
+Acesse o projeto:
 
-Você pode testar o gerador diretamente no navegador abrindo o arquivo `https://cartelabingorenata.netlify.app/`.  
+**https://cartelabingorenata.netlify.app/**
 
+## 🚀 Tecnologias
 
+* HTML
+* CSS
+* JavaScript
 
+## 📄 Licença
+Este projeto é distribuído. Sinta-se à vontade para utilizar, estudar e adaptar o código conforme sua necessidade.
+
+Este projeto está disponível sob a licença MIT.
